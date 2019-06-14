@@ -6,6 +6,3 @@ from django.apps import AppConfig
 
 class RestapiConfig(AppConfig):
     name = 'RestAPI'
-
-    def ready(self):
-        import RestAPI.signals
