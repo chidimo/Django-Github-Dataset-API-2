@@ -1,10 +1,10 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
-from django.views.generic.base import RedirectView
+# from django.views.generic.base import RedirectView
+from django.contrib import admin
+# from RestAPI.urls import event_router
 
 urlpatterns = [
-    # Dummy route. Can be removed.
-    url(r'^/', RedirectView.as_view(url='https://hackerrank.com', permanent=False)),
+    url('admin/', admin.site.urls),
+    url('', include("RestAPI.urls"))
 ]
-
-urlpatterns = format_suffix_patterns(urlpatterns)
