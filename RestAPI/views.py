@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from datetime import datetime
+import pytz
+from dateutil.parser import parse
+from dateutil.tz import gettz
+
+from django.db import IntegrityError
 
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect
-from django.utils.timezone import make_aware
+from django.utils import timezone
+from django.conf import settings
 
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -15,42 +20,33 @@ from .serializers import ActorSerializer, RepoSerializer, EventSerializer
 from .models import Actor, Repo, Event
 
 
-def remove_trailing_zero(s):
-    """Given an s such as 09, remove the trailing zero"""
-    if s == "00":
-        return s
-    
-    # splitting by zero always leaves an empty string in the zero position
-    if s.split("0")[0] == "":
-        return s.split("0")[1]
-    return s
-
-assert(remove_trailing_zero("07") == "7")
-assert(remove_trailing_zero("10") == "10")
-
-
-def make_datetime_object(date):
-    date = date.split()
-    date_component = date[0].split("-")
-    time_component = date[1].split(":")
-
-    return datetime(
-        int(date_component[0]),
-        int(remove_trailing_zero(date_component[1])), 
-        int(remove_trailing_zero(date_component[2])),
-        int(remove_trailing_zero(time_component[0])), 
-        int(remove_trailing_zero(time_component[1])), 
-        int(remove_trailing_zero(time_component[2]))
-    )    
-
-assert(make_datetime_object("2015-07-15 15:13:31") == datetime(2015, 7, 15, 15, 13, 31))
-assert(make_datetime_object("2016-04-18 00:13:31") == datetime(2016, 4, 18, 0, 13, 31))
-
-
 class RepoViewSet(viewsets.ModelViewSet):
     """Docstring"""
     queryset = Repo.objects.all()
     serializer_class = RepoSerializer
+
+def create_events_data(data):
+    event_id = int(data["id"])
+    event_type = data["type"]
+    parsed_date = parse(data["created_at"])
+    created_at = timezone.make_aware(parsed_date, gettz('Africa/Abidjan'))
+
+    actor = data["actor"]
+    actor_id = int(actor["id"])
+    login = actor["login"]
+    avatar_url = actor["avatar_url"]
+
+    repo = data["repo"]
+    repo_id = int(repo["id"])
+    repo_name = repo["name"]
+    repo_url = repo["url"]
+
+    act, created = Actor.objects.get_or_create(id=actor_id, login=login, avatar_url=avatar_url)
+    rep, _ = Repo.objects.get_or_create(id=repo_id, name=repo_name, url=repo_url)
+    event, created = Event.objects.get_or_create(id=event_id, type=event_type, actor=act, repo=rep, created_at=created_at)
+    if created:
+        return ('Object created', 201)
+    return ('Event already exists', 400)
 
 
 class EventViewSet(viewsets.ModelViewSet):
@@ -61,29 +57,8 @@ class EventViewSet(viewsets.ModelViewSet):
     def create(self, request):
         if request.method == 'POST':
             data = request.data
-
-            event_id = int(data["id"])
-            event_type = data["type"]
-            created_at = make_aware(make_datetime_object(data["created_at"]))
-
-            actor = data["actor"]
-            actor_id = int(actor["id"])
-            login = actor["login"]
-            avatar_url = actor["avatar_url"]
-
-            repo = data["repo"]
-            repo_id = int(repo["id"])
-            repo_name = repo["name"]
-            repo_url = repo["url"]
-
-            act, _ = Actor.objects.get_or_create(id=actor_id, login=login, avatar_url=avatar_url)
-            rep, _ = Repo.objects.get_or_create(id=repo_id, name=repo_name, url=repo_url)
-            try:
-                Event.objects.get(id=event_id)
-                return HttpResponse("Event already exists", status=400)
-            except:
-                eve, created = Event.objects.get_or_create(id=event_id, type=event_type, actor=act, repo=rep, created_at=created_at)
-                return HttpResponse("Object created", status=201)      
+            message, status = create_events_data(data)
+            return HttpResponse(message, status=status)    
 
 
 @api_view(['GET', 'DELETE'])
