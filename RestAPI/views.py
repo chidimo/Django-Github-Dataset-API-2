@@ -3,11 +3,12 @@ from __future__ import unicode_literals
 
 from datetime import datetime
 
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import redirect
 from django.utils.timezone import make_aware
 
 from rest_framework import viewsets
+from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 from .serializers import ActorSerializer, RepoSerializer, EventSerializer
@@ -90,7 +91,7 @@ def erase_all_events(request):
     e = Event.objects.all()
     n = e.count()
     e.delete()
-    return JsonResponse({'erase' : 'Deleted {} events'.format(n)})
+    return Response({'erase' : 'Deleted {} events'.format(n)})
 
 
 @api_view(['GET', 'PUT'])
@@ -100,7 +101,7 @@ def actors_index(request):
         for actor in Actor.objects.all():
             serialized_actor = ActorSerializer(actor)
             actors.append(serialized_actor.data)
-        return JsonResponse(actors, safe=False)
+        return Response(actors)
 
     if request.method == 'PUT':
         data = request.data
@@ -131,7 +132,7 @@ def actor_events(request, id):
         for event in actor_events:
             serialized_event = EventSerializer(event)
             data.append(serialized_event.data)
-        return JsonResponse(data, safe=False)
+        return Response(data)
     except Actor.DoesNotExist:
         raise Http404("Actor does not exist")
 
@@ -140,7 +141,7 @@ def actor_events(request, id):
 def actors_by_streak(request):
     if request.method == 'GET':
         actors = []
-        for actor in Actor.objects.all().order_by('-streak',  '-latest_event_timestamp', 'login'):
+        for actor in Actor.objects.all().order_by('-streak', '-latest_event_timestamp', 'login'):
             serialized_actor = ActorSerializer(actor)
             actors.append(serialized_actor.data)
-        return JsonResponse(actors, safe=False)
+        return Response(actors)
