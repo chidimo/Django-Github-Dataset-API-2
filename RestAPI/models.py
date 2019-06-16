@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.shortcuts import reverse
 from django.conf import settings
+from django.utils import timezone
 
 from django.db import models
 
@@ -12,7 +13,7 @@ class Actor(models.Model):
     login = models.CharField(max_length=50)
     avatar_url = models.URLField()
     event_count = models.IntegerField(default=0)
-    latest_event_timestamp = models.DateTimeField(blank=True, null=True)
+    latest_event_timestamp = models.DateTimeField(default=timezone.now)
     streak = models.IntegerField(default=0)
     pushed_today = models.BooleanField(default=False)
 

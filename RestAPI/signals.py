@@ -11,7 +11,19 @@ from .models import Event
 @receiver(post_save, sender=Event)
 def update_actor_event_count(sender, instance, **kwargs):
     actor = instance.actor
+
+    # update event_count
     actor.event_count = actor.event_set.count()
+
+    # update latest_event_timestamp
+    actor.latest_event_timestamp = instance.created_at
+
+
+    # update pushed_today
+
+    # update streak
+
+
 
     # if actor has no latest_event_timestamp, then actor has not worked today
     # so pushed_today is False
@@ -34,5 +46,5 @@ def update_actor_event_count(sender, instance, **kwargs):
     except AttributeError:
         actor.streak = 1
 
-    actor.latest_event_timestamp = instance.created_at
+    
     actor.save()
