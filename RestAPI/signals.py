@@ -46,5 +46,4 @@ def update_actor_event_count(sender, instance, **kwargs):
     except AttributeError:
         actor.streak = 1
 
-    
-    actor.save()
+    actor.save(update_fields=['pushed_today', 'event_count', 'latest_event_timestamp'])

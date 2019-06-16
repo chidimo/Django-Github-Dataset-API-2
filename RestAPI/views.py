@@ -41,14 +41,19 @@ def create_events_data(data):
     repo_name = repo["name"]
     repo_url = repo["url"]
 
+    # create and update actor
     act, created = Actor.objects.get_or_create(id=actor_id)
     act.login = login
     act.avatar_url = avatar_url
     act.save()
+
+    # create and update repo
     rep, _ = Repo.objects.get_or_create(id=repo_id)
     rep.name=repo_name
     rep.url = repo_url
     rep.save()
+
+    # create event
     event, created = Event.objects.get_or_create(id=event_id, type=event_type, actor=act, repo=rep, created_at=created_at)
     if created:
         return ('Object created', 201)
