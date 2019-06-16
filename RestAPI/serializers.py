@@ -8,6 +8,8 @@ class ActorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Actor
         fields = ('id', 'login', 'avatar_url')
+        # fields = ('id', 'login', 'avatar_url', 'event_count', 'latest_event_timestamp', 'streak', 'pushed_today')
+
 
 class RepoSerializer(serializers.ModelSerializer):
     class Meta:

@@ -32,4 +32,4 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.SUCCESS(status))
                 else:
                     self.stdout.write(self.style.ERROR(status))
-        self.stdout.write(self.style.ERROR('Finished creating data'))
+        self.stdout.write(self.style.SUCCESS('Finished creating data'))
