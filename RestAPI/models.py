@@ -13,12 +13,11 @@ class Actor(models.Model):
     login = models.CharField(max_length=50)
     avatar_url = models.URLField()
     event_count = models.IntegerField(default=0)
-    latest_event_timestamp = models.DateTimeField(default=timezone.now)
+    latest_event_ts = models.DateTimeField(null=True)
     streak = models.IntegerField(default=0)
-    pushed_today = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ('-event_count', '-latest_event_timestamp', 'login')
+        ordering = ('-event_count', '-latest_event_ts', 'login')
 
     def __str__(self):
         return self.login

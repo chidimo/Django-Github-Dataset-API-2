@@ -9,41 +9,25 @@ from django.dispatch import receiver
 from .models import Event
 
 @receiver(post_save, sender=Event)
-def update_actor_event_count(sender, instance, **kwargs):
+def update_actor(sender, instance, **kwargs):
+
     actor = instance.actor
-
-    # update event_count
-    actor.event_count = actor.event_set.count()
-
-    # update latest_event_timestamp
-    actor.latest_event_timestamp = instance.created_at
-
-
-    # update pushed_today
-
-    # update streak
-
-
-
-    # if actor has no latest_event_timestamp, then actor has not worked today
-    # so pushed_today is False
-    try:
-        if actor.latest_event_timestamp.day == instance.created_at.day:
-            actor.pushed_today = True # actor already created an event today
-        else:
-            actor.pushed_today = False
-    except AttributeError:
-        actor.pushed_today = False
-    actor.save(update_fields=['pushed_today', 'event_count'])
-
-    # update the streak
-    # if new event date is 1 day plus actor's latest_event_timestamp, increase streak by 1
     event_day = instance.created_at.day
-    try:
-        actor_latest_event_day = actor.latest_event_timestamp.day
-        if (event_day == (actor_latest_event_day + 1)) and (actor.pushed_today is False):
-            actor.streak = actor.streak + 1
-    except AttributeError:
-        actor.streak = 1
+    actor_previous_ts = actor.latest_event_ts
 
-    actor.save(update_fields=['pushed_today', 'event_count', 'latest_event_timestamp'])
+    # update actor event_count and latest_event_ts
+    actor.event_count = actor.event_set.count()
+    actor.latest_event_ts = instance.created_at
+
+    try:
+        actor_previous_event_day = actor_previous_ts.day
+    except AttributeError:
+        # set it one day back from the event
+        actor_previous_event_day = event_day - 1
+
+    if event_day == (actor_previous_event_day + 1):
+        actor.streak = actor.streak + 1
+    else:
+        pass
+
+    actor.save(update_fields=['streak', 'event_count', 'latest_event_ts'])

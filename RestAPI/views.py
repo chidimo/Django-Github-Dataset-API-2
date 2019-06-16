@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import pytz
 from dateutil.parser import parse
 from dateutil.tz import gettz
+import pytz
 
 from django.db import IntegrityError
 
@@ -29,7 +30,7 @@ def create_events_data(data):
     event_id = int(data["id"])
     event_type = data["type"]
     parsed_date = parse(data["created_at"])
-    created_at = timezone.make_aware(parsed_date, gettz('Africa/Abidjan'))
+    created_at = timezone.make_aware(parsed_date, timezone=pytz.timezone('Africa/Abidjan'))
 
     actor = data["actor"]
     actor_id = int(actor["id"])
@@ -127,7 +128,7 @@ def actor_events(request, id):
 def actors_by_streak(request):
     if request.method == 'GET':
         actors = []
-        for actor in Actor.objects.all().order_by('-streak', '-latest_event_timestamp', 'login'):
+        for actor in Actor.objects.all().order_by('-streak', '-latest_event_ts', 'login'):
             serialized_actor = ActorSerializer(actor)
             actors.append(serialized_actor.data)
         return Response(actors)
