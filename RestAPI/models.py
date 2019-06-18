@@ -15,6 +15,8 @@ class Actor(models.Model):
     event_count = models.IntegerField(default=0)
     latest_event_ts = models.DateTimeField(null=True)
     streak = models.IntegerField(default=0)
+    max_streak = models.IntegerField(default=1)
+
 
     class Meta:
         ordering = ('-event_count', '-latest_event_ts', 'login')

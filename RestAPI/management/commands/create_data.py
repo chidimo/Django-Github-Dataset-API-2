@@ -12,10 +12,15 @@ DATA_STORE = os.path.join(settings.BASE_DIR, 'TestData')
 data_files = glob.glob('{}/*.json'.format(DATA_STORE))
 
 class Command(BaseCommand):
-    help = 'Create events data'
+    help = 'Create events data, optional specify number of data to add'
+
+    def add_arguments(self, parser):
+        parser.add_argument('-num', type=int)
+
 
     def handle(self, *args, **options):
 
+        num = options['num'] if options['num'] else ''
         data = []
 
         for each in data_files:
@@ -24,6 +29,9 @@ class Command(BaseCommand):
                     js = json.loads(line)
                     if js['request']['method'] == "POST": 
                         data.append(json.loads(line))
+
+        if options['num']:
+            data = data[:num]
 
         for item in data:
             body = item['request']['body']

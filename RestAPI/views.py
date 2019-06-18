@@ -128,7 +128,7 @@ def actor_events(request, id):
 def actors_by_streak(request):
     if request.method == 'GET':
         actors = []
-        for actor in Actor.objects.all().order_by('-streak', '-latest_event_ts', 'login'):
+        for actor in Actor.objects.all().order_by('-max_streak', '-latest_event_ts', 'login'):
             serialized_actor = ActorSerializer(actor)
             actors.append(serialized_actor.data)
         return Response(actors)
